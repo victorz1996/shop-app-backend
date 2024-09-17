@@ -1,3 +1,4 @@
+import { WompiPaymentCardImpl } from './infrastructure/driven-adapters/wompi-payment-card-repository-impl';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -7,11 +8,19 @@ import ormConfig from './config/orm.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import ormConfigProd from './config/orm.config.prod';
 import { Product } from './domain/entities/product.entity';
-import { GetProducts } from './domain/use-cases/get-products.use-case';
+import { GetProductsUseCase } from './domain/use-cases/get-products.use-case';
 import { TypeOrmProductRepositoryImpl } from './infrastructure/driven-adapters/typeorm-product-repository-impl';
+import { TypeOrmTransactionRepositoryImpl } from './infrastructure/driven-adapters/typeorm-transaction-repository-impl';
+import { TransactionsController } from './infrastructure/entry-points/transactions/transactions.controller';
+import { Transaction } from './domain/entities/transaction.entity';
+import { CreateTransactionUseCase } from './domain/use-cases/create-transaction.use-case';
+import { VerifyTransactionStatusUseCase } from './domain/use-cases/verify-transaction-status.use-case';
+import { HttpModule } from '@nestjs/axios';
+import { TokenizeCardUseCase } from './domain/use-cases/tokenize-card.use-case';
 
 @Module({
   imports: [
+    HttpModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [ormConfig],
@@ -21,17 +30,32 @@ import { TypeOrmProductRepositoryImpl } from './infrastructure/driven-adapters/t
       useFactory:
         process.env.NODE_ENV !== 'production' ? ormConfig : ormConfigProd,
     }),
-    TypeOrmModule.forFeature([Product]),
+    TypeOrmModule.forFeature([Product, Transaction]),
   ],
-  controllers: [AppController, ProductsController],
+  controllers: [AppController, ProductsController, TransactionsController],
   providers: [
     {
       provide: 'ProductRepositoryCustom',
       useClass: TypeOrmProductRepositoryImpl,
     },
+    {
+      provide: 'TransactionRepositoryCustom',
+      useClass: TypeOrmTransactionRepositoryImpl,
+    },
+    {
+      provide: 'PaymentCardRepositoryCustom',
+      useClass: WompiPaymentCardImpl,
+    },
     AppService,
-    GetProducts,
+    GetProductsUseCase,
+    CreateTransactionUseCase,
+    VerifyTransactionStatusUseCase,
+    TokenizeCardUseCase,
   ],
-  exports: ['ProductRepositoryCustom'],
+  exports: [
+    'ProductRepositoryCustom',
+    'TransactionRepositoryCustom',
+    'PaymentCardRepositoryCustom',
+  ],
 })
 export class AppModule {}

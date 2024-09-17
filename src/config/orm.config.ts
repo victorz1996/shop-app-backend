@@ -1,6 +1,7 @@
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Product } from 'src/domain/entities/product.entity';
+import { Transaction } from 'src/domain/entities/transaction.entity';
 
 export default registerAs(
   'orm.config',
@@ -11,7 +12,7 @@ export default registerAs(
     username: 'postgres',
     password: 'admin',
     database: 'shop-app',
-    entities: [Product],
+    entities: [Product, Transaction],
     synchronize: true,
   }),
 );
