@@ -7,12 +7,12 @@ export default registerAs(
   'orm.config',
   (): TypeOrmModuleOptions => ({
     type: 'postgres',
-    host: '<YOUR_HOST>',
+    host: 'localhost',
     port: 5432,
-    username: '<YOUR_PRODUCTION_DATABASE_USERNAME>',
-    password: '<YOUR_PRODUCTION_DATABASE_PASSWORD>',
+    username: 'postgres',
+    password: 'admin',
     database: 'shop-app',
     entities: [Product, Transaction],
-    synchronize: false, // Disable this always in production
+    synchronize: false,
   }),
 );
